@@ -1,0 +1,28 @@
+.hero {
+  padding: 4rem 0;
+  text-align: center;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+
+.cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+  gap: 1rem;
+}
+
+.card {
+  color: inherit;
+  height: 100%;
+}
+
+.card:hover {
+  text-decoration: none;
+  box-shadow: var(--ifm-global-shadow-md);
+}

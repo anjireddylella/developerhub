@@ -1,0 +1,9 @@
+announcements:
+  label: Announcements
+  permalink: /announcements
+  description: News from the SP-API team
+
+migrations:
+  label: Migrations
+  permalink: /migrations
+  description: Deprecations and migration guides

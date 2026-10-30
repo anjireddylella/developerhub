@@ -1,0 +1,103 @@
+# Builds the hub with live GitHub Discussions and deploys it to AWS Amplify
+# Hosting through the Amplify deployment API (no Amplify GitHub App needed).
+#
+# Rebuilds when:
+#   - main changes (docs, blog posts, code)
+#   - a discussion or reply is created/edited (new questions, answers, ideas)
+#   - hourly, to pick up votes (reactions don't trigger workflow events)
+#
+# Required repository settings (Settings > Secrets and variables > Actions):
+#   vars.AWS_REGION            e.g. us-east-1
+#   vars.AWS_DEPLOY_ROLE_ARN   IAM role trusted for GitHub OIDC subject
+#                              repo:<owner>/<repo>:environment:production, allowed only
+#                              amplify:CreateDeployment, StartDeployment, GetJob on this app
+#   vars.AMPLIFY_APP_ID        Amplify app created with "Deploy without Git"
+#   vars.AMPLIFY_BRANCH        Amplify branch name, e.g. main
+#   vars.GISCUS_REPO_ID        from https://giscus.app/
+#   vars.RUM_APP_MONITOR_ID    CloudWatch RUM app monitor ID (optional)
+#   vars.RUM_IDENTITY_POOL_ID  Cognito identity pool for RUM (optional)
+name: Build and deploy
+
+on:
+  push:
+    branches: [main]
+  discussion:
+    types: [created, edited, answered, unanswered, labeled, unlabeled, locked, unlocked, deleted]
+  discussion_comment:
+    types: [created, edited, deleted]
+  schedule:
+    - cron: '17 * * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  discussions: read
+  id-token: write
+
+# A burst of new comments should produce one deploy, not many. GitHub keeps
+# at most one queued run per group, so bursts collapse into a single rebuild.
+# Running deploys are not cancelled, which avoids half-started Amplify jobs.
+concurrency:
+  group: deploy
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: production
+    defaults:
+      run:
+        working-directory: site
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: main
+
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: site/package-lock.json
+
+      - run: npm ci
+
+      - name: Build with live discussions
+        run: npm run build
+        env:
+          HUB_GITHUB_REPO: ${{ github.repository }}
+          HUB_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GISCUS_REPO_ID: ${{ vars.GISCUS_REPO_ID }}
+          RUM_APP_MONITOR_ID: ${{ vars.RUM_APP_MONITOR_ID }}
+          RUM_IDENTITY_POOL_ID: ${{ vars.RUM_IDENTITY_POOL_ID }}
+          RUM_REGION: ${{ vars.AWS_REGION }}
+
+      - uses: aws-actions/configure-aws-credentials@e1253824e5c10ff9df46874f81ed3ec929e19cfd # v6.3.0
+        with:
+          role-to-assume: ${{ vars.AWS_DEPLOY_ROLE_ARN }}
+          aws-region: ${{ vars.AWS_REGION }}
+
+      - name: Deploy to Amplify
+        env:
+          APP_ID: ${{ vars.AMPLIFY_APP_ID }}
+          BRANCH: ${{ vars.AMPLIFY_BRANCH }}
+        run: |
+          set -euo pipefail
+          (cd build && zip -qr ../site.zip .)
+          read -r JOB_ID UPLOAD_URL < <(aws amplify create-deployment \
+            --app-id "$APP_ID" --branch-name "$BRANCH" \
+            --query '[jobId, zipUploadUrl]' --output text)
+          curl --fail --silent --show-error -H 'Content-Type: application/zip' \
+            --upload-file site.zip "$UPLOAD_URL"
+          aws amplify start-deployment --app-id "$APP_ID" --branch-name "$BRANCH" --job-id "$JOB_ID" > /dev/null
+          for _ in $(seq 1 60); do
+            STATUS=$(aws amplify get-job --app-id "$APP_ID" --branch-name "$BRANCH" --job-id "$JOB_ID" \
+              --query 'job.summary.status' --output text)
+            echo "Deployment $JOB_ID: $STATUS"
+            case "$STATUS" in
+              SUCCEED) exit 0 ;;
+              FAILED|CANCELLED) exit 1 ;;
+            esac
+            sleep 10
+          done
+          echo "Timed out waiting for deployment" >&2
+          exit 1

@@ -1,0 +1,82 @@
+{
+  "_note": "Placeholder discussions used only when HUB_GITHUB_TOKEN is not set. Not real community content.",
+  "questions": [
+    {
+      "number": 101,
+      "title": "Getting 403 Unauthorized when calling getOrders after refreshing the LWA token",
+      "url": "https://github.com/amzn/selling-partner-api-hub/discussions/101",
+      "bodyHTML": "<p>I exchange my refresh token for an access token and pass it in <code>x-amz-access-token</code>, but <code>getOrders</code> returns 403. Calls to <code>getMarketplaceParticipations</code> work. What am I missing?</p><p><em>Sample discussion for local preview.</em></p>",
+      "createdAt": "2026-10-20T15:04:00Z",
+      "updatedAt": "2026-10-25T09:12:00Z",
+      "upvoteCount": 4,
+      "isAnswered": true,
+      "locked": false,
+      "author": {"login": "sample-developer-1", "avatarUrl": ""},
+      "comments": {"totalCount": 3},
+      "labels": {"nodes": [{"name": "orders-api", "color": "1d76db"}]},
+      "reactionGroups": []
+    },
+    {
+      "number": 102,
+      "title": "Best way to page through large Reports API results?",
+      "url": "https://github.com/amzn/selling-partner-api-hub/discussions/102",
+      "bodyHTML": "<p>Is there a recommended pattern for processing very large report documents without loading them fully into memory?</p><p><em>Sample discussion for local preview.</em></p>",
+      "createdAt": "2026-10-22T11:30:00Z",
+      "updatedAt": "2026-10-24T18:40:00Z",
+      "upvoteCount": 2,
+      "isAnswered": false,
+      "locked": false,
+      "author": {"login": "sample-developer-2", "avatarUrl": ""},
+      "comments": {"totalCount": 1},
+      "labels": {"nodes": [{"name": "reports-api", "color": "0e8a16"}]},
+      "reactionGroups": []
+    },
+    {
+      "number": 103,
+      "title": "Which notifications should I subscribe to for order status changes?",
+      "url": "https://github.com/amzn/selling-partner-api-hub/discussions/103",
+      "bodyHTML": "<p>I want to stop polling for order updates. Which notification types cover status changes?</p><p><em>Sample discussion for local preview.</em></p>",
+      "createdAt": "2026-10-23T08:00:00Z",
+      "updatedAt": "2026-10-23T08:00:00Z",
+      "upvoteCount": 0,
+      "isAnswered": false,
+      "locked": false,
+      "author": {"login": "sample-developer-3", "avatarUrl": ""},
+      "comments": {"totalCount": 0},
+      "labels": {"nodes": [{"name": "notifications-api", "color": "5319e7"}]},
+      "reactionGroups": []
+    }
+  ],
+  "ideas": [
+    {
+      "number": 201,
+      "title": "More sandbox scenarios for the Orders API",
+      "url": "https://github.com/amzn/selling-partner-api-hub/discussions/201",
+      "bodyHTML": "<p>More sandbox scenarios (cancellations, partial shipments) would make end-to-end testing easier.</p><p><em>Sample discussion for local preview.</em></p>",
+      "createdAt": "2026-10-10T12:00:00Z",
+      "updatedAt": "2026-10-25T10:00:00Z",
+      "upvoteCount": 12,
+      "isAnswered": false,
+      "locked": false,
+      "author": {"login": "sample-developer-4", "avatarUrl": ""},
+      "comments": {"totalCount": 5},
+      "labels": {"nodes": [{"name": "under-review", "color": "fbca04"}]},
+      "reactionGroups": [{"content": "THUMBS_UP", "reactors": {"totalCount": 9}}]
+    },
+    {
+      "number": 202,
+      "title": "Publish a changelog feed per API",
+      "url": "https://github.com/amzn/selling-partner-api-hub/discussions/202",
+      "bodyHTML": "<p>A per-API RSS feed would let us watch only the APIs we use.</p><p><em>Sample discussion for local preview.</em></p>",
+      "createdAt": "2026-10-15T09:00:00Z",
+      "updatedAt": "2026-10-21T14:00:00Z",
+      "upvoteCount": 5,
+      "isAnswered": false,
+      "locked": false,
+      "author": {"login": "sample-developer-5", "avatarUrl": ""},
+      "comments": {"totalCount": 2},
+      "labels": {"nodes": [{"name": "planned", "color": "0e8a16"}]},
+      "reactionGroups": [{"content": "THUMBS_UP", "reactors": {"totalCount": 3}}]
+    }
+  ]
+}
