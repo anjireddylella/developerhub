@@ -174,7 +174,7 @@ const config = {
       apiFamily: 'orders',
       sellingPartnerScope: 'unknown',
       summary: 'Search orders and retrieve a selected order using the pinned 2026 model.',
-      guideUrl: 'https://developer-docs.amazon/sp-api/docs/orders-api-v2026-01-01-reference',
+      guideUrl: 'https://developer-docs.amazon/sp-api/reference/searchorders',
       model: {
         ...modelSource(
           'models/orders-api-model/orders_2026-01-01.json',
@@ -228,7 +228,7 @@ const config = {
       apiFamily: 'vehicles',
       sellingPartnerScope: 'unknown',
       summary: 'Retrieve the latest collection of automotive vehicle definitions.',
-      guideUrl: 'https://developer-docs.amazon/sp-api/docs/automotive-api-v2024-11-01-reference',
+      guideUrl: 'https://developer-docs.amazon/sp-api/reference/vehicles-v2024-11-01',
       model: {
         ...modelSource(
           'models/vehicles-api-model/vehicles_2024-11-01.json',
@@ -253,7 +253,7 @@ const config = {
       apiFamily: 'easy-ship',
       sellingPartnerScope: 'unknown',
       summary: 'Find handover slots and create, retrieve, or update scheduled packages.',
-      guideUrl: 'https://developer-docs.amazon/sp-api/docs/easyship-api-v2022-03-23-reference',
+      guideUrl: 'https://developer-docs.amazon/sp-api/reference/easy-ship-v2022-03-23',
       model: {
         ...modelSource(
           'models/easy-ship-model/easyShip_2022-03-23.json',
