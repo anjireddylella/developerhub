@@ -25,12 +25,13 @@ export default {
     repoId: env.GISCUS_REPO_ID || '',
   },
 
-  // Amazon CloudWatch RUM app monitor. Leave empty to disable analytics.
+  // RUM stays disabled until the POC has explicit privacy approval. Public
+  // monitor IDs alone must never activate browser transport.
   rum: {
+    privacyApproved: env.RUM_PRIVACY_APPROVED === 'true',
     appMonitorId: env.RUM_APP_MONITOR_ID || '',
     identityPoolId: env.RUM_IDENTITY_POOL_ID || '',
     region: env.RUM_REGION || 'us-east-1',
-    // Fraction of sessions to record (0..1). Lower it if cost becomes a concern.
     sessionSampleRate: Number(env.RUM_SESSION_SAMPLE_RATE || 1),
   },
 };

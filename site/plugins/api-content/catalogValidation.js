@@ -17,6 +17,52 @@ export const CATALOG_LIMITS = Object.freeze({
   communityBytes: 64 * 1024,
 });
 
+export const ANALYTICS_CATALOG_LIMITS = Object.freeze({
+  totalBytes: 64 * 1024,
+  contextBytes: 32 * 1024,
+  contexts: 250,
+  codeIds: 32,
+  navigationIds: 128,
+  resourceIds: 32,
+  idSetBytes: 8 * 1024,
+});
+
+export const CONTENT_TYPES = Object.freeze([
+  'api',
+  'model',
+  'recipe',
+  'sample',
+  'hot_topic',
+  'announcement',
+  'doc',
+  'resource',
+  'question',
+  'idea',
+  'search',
+  'unknown',
+]);
+export const API_FAMILIES = Object.freeze([
+  'data-kiosk',
+  'orders',
+  'vehicles',
+  'easy-ship',
+  'reports',
+  'cross-cutting',
+  'unknown',
+]);
+export const LANGUAGES = Object.freeze([
+  'java',
+  'python',
+  'php',
+  'json',
+  'graphql',
+  'multiple',
+  'none',
+  'unknown',
+]);
+export const SELLING_PARTNER_SCOPES = Object.freeze(['seller', 'vendor', 'both', 'unknown']);
+export const DEVELOPER_TYPES = Object.freeze(['solution_provider', 'private_developer', 'unknown']);
+
 const SAFE_PUBLIC_VALUES = new Set(['ATVPDKIKX0DER', 'AUTHORIZATION']);
 const PATTERNS = [
   ['lwa-token', /\bAtz[ar]\|[^\s"'`]+/g],
@@ -36,6 +82,19 @@ const SENSITIVE_KEYS = new Set([
   'authorization',
 ]);
 const PLACEHOLDER = /^(?:<[A-Za-z0-9_-]+>|\$\{[A-Z0-9_]+\}|\{\{[A-Za-z0-9_-]+\}\}|YOUR_[A-Z0-9_]+|REPLACE_ME|EXAMPLE|[xX]{4,})$/;
+const IDENTIFIER = /^[a-z0-9][a-z0-9/_-]{0,99}$/;
+const NAVIGATION_ID = /^[a-z0-9][a-z0-9_-]{0,63}$/;
+const PAGE_ID = /^\/[a-z0-9][a-z0-9/_:-]{0,119}$/;
+const CONTEXT_KEYS = [
+  'api_family',
+  'content_id',
+  'content_type',
+  'developer_type',
+  'language',
+  'pageId',
+  'route',
+  'selling_partner_scope',
+];
 
 export function utf8Bytes(value) {
   return encoder.encode(value).byteLength;
@@ -82,7 +141,7 @@ export function validateCatalogRecords(records, {maxRecords, maxBytes, label = '
     }
     const id = record.id;
     boundedString(id, 'id', CATALOG_LIMITS.id, label);
-    if (!/^[a-z0-9][a-z0-9/_-]{0,99}$/.test(id) || seen.has(id)) {
+    if (!IDENTIFIER.test(id) || seen.has(id)) {
       throw new Error(`Search catalog validation failed: ${id}: id`);
     }
     seen.add(id);
@@ -129,4 +188,87 @@ export function validateBaseCatalog({apiRecords, resolvedRecords, resourceRecord
     throw new Error('Search catalog validation failed: base: aggregate-size');
   }
   return records;
+}
+
+function exactKeys(value, keys) {
+  return value && Object.getPrototypeOf(value) === Object.prototype &&
+    JSON.stringify(Object.keys(value).sort()) === JSON.stringify([...keys].sort());
+}
+
+function analyticsError(rule) {
+  throw new Error(`Analytics catalog validation failed: ${rule}`);
+}
+
+function validateContext(context) {
+  if (!exactKeys(context, CONTEXT_KEYS)) analyticsError('context-keys');
+  if (
+    typeof context.route !== 'string' ||
+    utf8Bytes(context.route) > 120 ||
+    !/^\/(?:[a-z0-9][a-z0-9/_-]*(?::id)?|)$/.test(context.route) ||
+    context.route.includes('//') ||
+    context.route.includes('..')
+  ) analyticsError('context-route');
+  if (typeof context.pageId !== 'string' || utf8Bytes(context.pageId) > 120 || !PAGE_ID.test(context.pageId)) {
+    analyticsError('context-page-id');
+  }
+  if (!IDENTIFIER.test(context.content_id)) analyticsError('context-content-id');
+  if (!CONTENT_TYPES.includes(context.content_type)) analyticsError('context-content-type');
+  if (!API_FAMILIES.includes(context.api_family)) analyticsError('context-api-family');
+  if (!LANGUAGES.includes(context.language)) analyticsError('context-language');
+  if (!SELLING_PARTNER_SCOPES.includes(context.selling_partner_scope)) analyticsError('context-scope');
+  if (context.developer_type !== 'unknown') analyticsError('context-developer-type');
+  for (const value of Object.values(context)) {
+    if (typeof value === 'string' && sensitiveValueRules(value).length) analyticsError('context-sensitive');
+  }
+}
+
+function validateIdSet(ids, name, maxCount, pattern, maxBytes) {
+  if (!Array.isArray(ids) || ids.length > maxCount || utf8Bytes(JSON.stringify(ids)) > ANALYTICS_CATALOG_LIMITS.idSetBytes) {
+    analyticsError(`${name}-limit`);
+  }
+  let prior = null;
+  for (const id of ids) {
+    if (typeof id !== 'string' || utf8Bytes(id) > maxBytes || !pattern.test(id) || id <= prior) {
+      analyticsError(`${name}-id`);
+    }
+    if (sensitiveValueRules(id).length) analyticsError(`${name}-sensitive`);
+    prior = id;
+  }
+}
+
+export function validateAnalyticsCatalog(catalog) {
+  if (!exactKeys(catalog, ['version', 'contexts', 'codeIds', 'navigationIds', 'resourceIds'])) {
+    analyticsError('top-level-keys');
+  }
+  if (catalog.version !== 1) analyticsError('version');
+  if (
+    !Array.isArray(catalog.contexts) ||
+    catalog.contexts.length > ANALYTICS_CATALOG_LIMITS.contexts ||
+    utf8Bytes(JSON.stringify(catalog.contexts)) > ANALYTICS_CATALOG_LIMITS.contextBytes
+  ) analyticsError('contexts-limit');
+  let priorRoute = null;
+  for (const context of catalog.contexts) {
+    validateContext(context);
+    if (context.route <= priorRoute) analyticsError('contexts-order');
+    priorRoute = context.route;
+  }
+  validateIdSet(catalog.codeIds, 'code', ANALYTICS_CATALOG_LIMITS.codeIds, IDENTIFIER, 100);
+  validateIdSet(catalog.navigationIds, 'navigation', ANALYTICS_CATALOG_LIMITS.navigationIds, NAVIGATION_ID, 64);
+  validateIdSet(catalog.resourceIds, 'resource', ANALYTICS_CATALOG_LIMITS.resourceIds, IDENTIFIER, 100);
+  if (utf8Bytes(JSON.stringify(catalog)) > ANALYTICS_CATALOG_LIMITS.totalBytes) analyticsError('aggregate-size');
+  return catalog;
+}
+
+export function serializeAnalyticsCatalog(catalog) {
+  validateAnalyticsCatalog(catalog);
+  const serialized = JSON.stringify(catalog)
+    .replace(/</g, '\\u003c')
+    .replace(/>/g, '\\u003e')
+    .replace(/&/g, '\\u0026')
+    .replace(/\u2028/g, '\\u2028')
+    .replace(/\u2029/g, '\\u2029');
+  if (/<\/script/i.test(serialized) || utf8Bytes(serialized) > ANALYTICS_CATALOG_LIMITS.totalBytes) {
+    analyticsError('serialization');
+  }
+  return serialized;
 }

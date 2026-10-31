@@ -22,7 +22,7 @@ export default function ApiPage({data: api}) {
         <section aria-labelledby="overview">
           <h2 id="overview">Overview</h2>
           <p>{api.summary}</p>
-          <p><a href={api.guideUrl}>Read the official API guide</a></p>
+          <p><a href={api.guideUrl} data-analytics-destination="official_docs">Read the official API guide</a></p>
         </section>
         <OperationsTable operations={api.model.projection.operations} authorization={api.authorization} />
         <ModelExcerpt model={api.model} />

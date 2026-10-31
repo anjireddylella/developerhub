@@ -92,7 +92,7 @@ export default function SearchPage() {
           <section aria-labelledby="search-shortcuts">
             <Heading as="h2" id="search-shortcuts">Browse by section</Heading>
             <ul className={styles.shortcuts}>
-              {SHORTCUTS.map((shortcut) => <li key={shortcut.route}><Link to={shortcut.route}>{shortcut.title}</Link></li>)}
+              {SHORTCUTS.map((shortcut) => <li key={shortcut.route}><Link data-analytics-id="search-shortcut" to={shortcut.route}>{shortcut.title}</Link></li>)}
             </ul>
           </section>
         )}
@@ -101,7 +101,7 @@ export default function SearchPage() {
           <ul className={styles.results}>
             {results.map((result) => (
               <li key={result.id}>
-                <Link to={result.route}><strong>{result.title}</strong></Link>
+                <Link data-analytics-id="search-result" to={result.route}><strong>{result.title}</strong></Link>
                 <p>{result.summary}</p>
                 <small>{result.contentType.replace('_', ' ')} · {result.apiFamily}</small>
               </li>
@@ -112,7 +112,7 @@ export default function SearchPage() {
         {normalized && results.length === 0 && (
           <section aria-labelledby="no-results">
             <Heading as="h2" id="no-results">No results</Heading>
-            <p><Link to="/community/questions">Browse community questions</Link> or <a href="https://github.com/anjireddylella/developerhub/discussions/new?category=q-a">ask on GitHub</a>.</p>
+            <p><Link data-analytics-id="search-community" to="/community/questions">Browse community questions</Link> or <a href="https://github.com/anjireddylella/developerhub/discussions/new?category=q-a" data-analytics-destination="developer_hub_discussion" data-community-action="ask_question" data-community-section="questions">ask on GitHub</a>.</p>
           </section>
         )}
       </main>

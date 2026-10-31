@@ -45,10 +45,10 @@ function Hero() {
         </Heading>
         <p className="hero__subtitle">{siteConfig.tagline}</p>
         <div className={styles.actions}>
-          <Link className="button button--secondary button--lg" to="/docs/intro">
+          <Link className="button button--secondary button--lg" to="/docs/intro" data-analytics-id="home-primary">
             Start here
           </Link>
-          <Link className="button button--outline button--lg" to="/community/questions">
+          <Link className="button button--outline button--lg" to="/community/questions" data-analytics-id="home-primary">
             Ask a question
           </Link>
         </div>
@@ -64,12 +64,12 @@ function CommunityList({title, items, basePath, stat}) {
       <ul>
         {items.map((i) => (
           <li key={i.number}>
-            <Link to={`${basePath}/${i.number}`}>{i.title}</Link>{' '}
+            <Link data-analytics-id="home-community-item" to={`${basePath}/${i.number}`}>{i.title}</Link>{' '}
             <small>({stat(i)})</small>
           </li>
         ))}
       </ul>
-      <Link to={basePath}>See all →</Link>
+      <Link data-analytics-id="home-community-list" to={basePath}>See all →</Link>
     </div>
   );
 }
@@ -82,7 +82,7 @@ export default function Home() {
       <main className="container margin-vert--lg">
         <section aria-label="Get started" className={styles.cards}>
           {CARDS.map((c) => (
-            <Link key={c.title} to={c.to} className={clsx('card', styles.card)}>
+            <Link data-analytics-id="home-card" key={c.title} to={c.to} className={clsx('card', styles.card)}>
               <div className="card__header">
                 <Heading as="h3">{c.title}</Heading>
               </div>

@@ -11,13 +11,13 @@ export default function SourceAttribution({api}) {
         authoritative.
       </p>
       <ul>
-        <li><a href={api.model.sourceUrl}>View exact original file</a></li>
-        <li><a href={api.model.commitUrl}>View at pinned commit</a></li>
-        <li><a href={api.model.historyUrl}>View live file history</a></li>
-        <li><a href={api.model.licenseRoutes[0]}>Model license</a></li>
-        <li><a href={api.model.licenseRoutes[1]}>Model NOTICE</a></li>
-        <li><a href={api.model.licenseSourceUrls[0]}>Pinned upstream license</a></li>
-        <li><a href={api.model.licenseSourceUrls[1]}>Pinned upstream NOTICE</a></li>
+        <li><a href={api.model.sourceUrl} data-analytics-destination="models_source">View exact original file</a></li>
+        <li><a href={api.model.commitUrl} data-analytics-destination="models_source">View at pinned commit</a></li>
+        <li><a href={api.model.historyUrl} data-analytics-destination="models_source">View live file history</a></li>
+        <li><a href={api.model.licenseRoutes[0]} data-analytics-id="api-local-license">Model license</a></li>
+        <li><a href={api.model.licenseRoutes[1]} data-analytics-id="api-local-license">Model NOTICE</a></li>
+        <li><a href={api.model.licenseSourceUrls[0]} data-analytics-destination="models_source">Pinned upstream license</a></li>
+        <li><a href={api.model.licenseSourceUrls[1]} data-analytics-destination="models_source">Pinned upstream NOTICE</a></li>
       </ul>
     </aside>
   );

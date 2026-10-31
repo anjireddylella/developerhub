@@ -16,9 +16,9 @@ export default function SampleCards({samples, emptyMessage}) {
                 <p><strong>Sample applicability:</strong> {sample.applicability}</p>
                 <p>{sample.warning}</p>
                 <p><strong>Pinned source:</strong> <code>{sample.localPath}</code></p>
-                <p><a href={sample.sourceUrl}>View pinned sample folder</a> · <a href={sample.readmeUrl}>View README</a></p>
-                {sample.documentation.map((document) => <p key={document.url}><a href={document.url}>{document.label}</a></p>)}
-                <p><a href="/licenses/selling-partner-api-samples/license">Sample code license</a> · <a href={sample.licenseUrl}>Pinned upstream license</a></p>
+                <p><a href={sample.sourceUrl} data-analytics-destination="samples_source">View pinned sample folder</a> · <a href={sample.readmeUrl} data-analytics-destination="samples_source">View README</a></p>
+                {sample.documentation.map((document) => <p key={document.url}><a href={document.url} data-analytics-destination="samples_source">{document.label}</a></p>)}
+                <p><a href="/licenses/selling-partner-api-samples/license" data-analytics-id="api-local-license">Sample code license</a> · <a href={sample.licenseUrl} data-analytics-destination="samples_source">Pinned upstream license</a></p>
               </div>
             </li>
           ))}

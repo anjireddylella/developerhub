@@ -1,80 +1,86 @@
-// Loads CloudWatch RUM in the browser and records:
-//   - page views on every client-side route change
-//   - clicks on links that leave the hub (where developers go next)
-//
-// Cookies are off by default. Turn them on with the consent tool once the
-// cookie-consent decision is made (see README "Analytics and consent").
+// Records bounded page views and explicitly identified navigation actions.
+// CloudWatch RUM remains off unless privacy approval and both public IDs are
+// deliberately configured. Site interactions never depend on the transport.
 
 import ExecutionEnvironment from '@docusaurus/ExecutionEnvironment';
 import siteConfig from '@generated/docusaurus.config';
-import {EVENTS, getRumClient, setRumClient, track} from '../lib/analytics';
+import {
+  EVENTS,
+  recordPageView,
+  setRumClient,
+  track,
+  trackInternalNavigation,
+} from '../lib/analytics';
 
 const rumConfig = siteConfig.customFields?.rum ?? {};
-const enabled = Boolean(rumConfig.appMonitorId && rumConfig.identityPoolId);
+const enabled = Boolean(
+  rumConfig.privacyApproved === true &&
+  rumConfig.appMonitorId &&
+  rumConfig.identityPoolId,
+);
 
-// RUM's performance telemetry records each resource's full URL, and the
-// Giscus iframe URL carries the visitor's Giscus session token. Skip Giscus
-// resources entirely. Passing `ignore` replaces aws-rum-web's default, so the
-// default rules (non-HTTP entries, fetch/XHR) are repeated here.
-function ignorePerformanceEntry(entry) {
-  if (entry.entryType !== 'resource') return false;
-  if (!/^https?:/.test(entry.name)) return true;
-  if (/^(fetch|xmlhttprequest)$/.test(entry.initiatorType)) return true;
+function startRum() {
+  if (!enabled) return;
+  import('aws-rum-web')
+    .then(({AwsRum}) => {
+      const client = new AwsRum(rumConfig.appMonitorId, '0.1.0', rumConfig.region, {
+        identityPoolId: rumConfig.identityPoolId,
+        endpoint: `https://dataplane.rum.${rumConfig.region}.amazonaws.com`,
+        sessionSampleRate: rumConfig.sessionSampleRate,
+        telemetries: [],
+        allowCookies: false,
+        enableXRay: false,
+        disableAutoPageView: true,
+      });
+      setRumClient(client);
+    })
+    .catch(() => {
+      if (process.env.NODE_ENV === 'development') {
+        // eslint-disable-next-line no-console
+        console.warn('[analytics] Analytics transport is unavailable.');
+      }
+    });
+}
+
+function trackIdentifiedClick(event) {
+  if (!(event.target instanceof Element) || (typeof event.button === 'number' && event.button !== 0)) return;
+  const link = event.target.closest('a[href]');
+  if (!link) return;
+  let target;
   try {
-    const {hostname} = new URL(entry.name);
-    return hostname === 'giscus.app' || hostname.endsWith('.giscus.app');
+    target = new URL(link.href, window.location.href);
   } catch {
-    return true;
+    return;
   }
+
+  const action = link.dataset.communityAction;
+  const section = link.dataset.communitySection;
+  if (action && section) track(EVENTS.communityAction, {action, section});
+
+  if (target.origin === window.location.origin) {
+    const navigationId = link.dataset.analyticsId;
+    if (navigationId) {
+      trackInternalNavigation(navigationId, target.pathname, window.location.pathname);
+    }
+    return;
+  }
+
+  const destinationType = link.dataset.analyticsDestination;
+  if (!destinationType) return;
+  const resourceId = link.dataset.analyticsResourceId;
+  track(EVENTS.outboundClick, {
+    destinationType,
+    ...(resourceId ? {resourceId} : {}),
+  });
 }
 
 if (ExecutionEnvironment.canUseDOM) {
-  if (enabled) {
-    import('aws-rum-web')
-      .then(({AwsRum}) => {
-        const client = new AwsRum(rumConfig.appMonitorId, '0.1.0', rumConfig.region, {
-          identityPoolId: rumConfig.identityPoolId,
-          endpoint: `https://dataplane.rum.${rumConfig.region}.amazonaws.com`,
-          sessionSampleRate: rumConfig.sessionSampleRate,
-          telemetries: [['performance', {ignore: ignorePerformanceEntry}], 'errors'],
-          allowCookies: false,
-          enableXRay: false,
-          // We record page views ourselves so SPA navigation is counted.
-          disableAutoPageView: true,
-        });
-        setRumClient(client);
-        client.recordPageView(window.location.pathname);
-      })
-      .catch((err) => {
-        // Analytics must never break the site.
-        // eslint-disable-next-line no-console
-        console.warn('[analytics] RUM failed to load', err);
-      });
-  }
-
-  document.addEventListener(
-    'click',
-    (event) => {
-      const link = event.target instanceof Element ? event.target.closest('a[href]') : null;
-      if (!link) return;
-      let url;
-      try {
-        url = new URL(link.href, window.location.href);
-      } catch {
-        return;
-      }
-      if (url.origin === window.location.origin) return;
-      track(EVENTS.outboundClick, {
-        destination: `${url.origin}${url.pathname}`, // no query string
-        fromPage: window.location.pathname,
-        label: (link.textContent || '').trim().slice(0, 80),
-      });
-    },
-    {capture: true},
-  );
+  recordPageView(window.location.pathname);
+  startRum();
+  document.addEventListener('click', trackIdentifiedClick, {capture: true});
 }
 
 export function onRouteDidUpdate({location, previousLocation}) {
   if (!previousLocation || location.pathname === previousLocation.pathname) return;
-  getRumClient()?.recordPageView(location.pathname);
+  recordPageView(location.pathname);
 }

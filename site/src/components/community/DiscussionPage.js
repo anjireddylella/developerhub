@@ -14,7 +14,7 @@ export default function DiscussionPage({data}) {
         <div className="row">
           <div className="col col--8 col--offset-2">
             <nav aria-label="Breadcrumb" className="margin-bottom--md">
-              <Link to={section.basePath}>← All {section.title.toLowerCase()}</Link>
+              <Link data-analytics-id="community-breadcrumb" to={section.basePath}>← All {section.title.toLowerCase()}</Link>
             </nav>
 
             {source === 'sample' && <SampleDataNotice />}
@@ -36,7 +36,7 @@ export default function DiscussionPage({data}) {
             <PrivacyNotice />
 
             <section aria-label="Replies" className="margin-top--lg">
-              <GiscusThread number={item.number} url={item.url} />
+              <GiscusThread number={item.number} url={item.url} section={section.key} />
             </section>
           </div>
         </div>

@@ -1,12 +1,12 @@
 import React from 'react';
 import Layout from '@theme/Layout';
 import Link from '@docusaurus/Link';
-import {EVENTS, track} from '@site/src/lib/analytics';
 import {SampleDataNotice, PrivacyNotice, Labels, formatDate} from './shared';
 import styles from './styles.module.css';
 
 export default function DiscussionListPage({data}) {
   const {section, items, source} = data;
+  const newAction = section.key === 'questions' ? 'ask_question' : 'submit_idea';
 
   return (
     <Layout title={section.title} description={section.description}>
@@ -21,7 +21,9 @@ export default function DiscussionListPage({data}) {
             href={section.newUrl}
             target="_blank"
             rel="noopener noreferrer"
-            onClick={() => track(EVENTS.communityAction, {action: 'new', section: section.key})}>
+            data-analytics-destination="developer_hub_discussion"
+            data-community-action={newAction}
+            data-community-section={section.key}>
             {section.newLabel}
             <span className="sr-only"> (opens GitHub in a new tab)</span>
           </a>
@@ -34,7 +36,13 @@ export default function DiscussionListPage({data}) {
             {section.unavailableCount}{' '}
             {section.unavailableCount === 1 ? 'discussion could' : 'discussions could'} not be
             displayed.{' '}
-            <a href={section.openUrl} target="_blank" rel="noopener noreferrer">
+            <a
+              href={section.openUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              data-analytics-destination="developer_hub_discussion"
+              data-community-action="open_discussion"
+              data-community-section={section.key}>
               Open discussions on GitHub
               <span className="sr-only"> (opens GitHub in a new tab)</span>
             </a>
@@ -56,7 +64,7 @@ export default function DiscussionListPage({data}) {
                   <span>replies</span>
                 </div>
                 <div className={styles.main}>
-                  <Link to={`${section.basePath}/${item.number}`} className={styles.title}>
+                  <Link data-analytics-id="community-item" to={`${section.basePath}/${item.number}`} className={styles.title}>
                     {item.title}
                   </Link>
                   <div className={styles.meta}>

@@ -7,7 +7,7 @@ export default function ApiHeader({api}) {
   return (
     <header>
       <nav aria-label="Breadcrumb" className={styles.breadcrumb}>
-        <Link to="/apis">APIs</Link> <span aria-hidden="true">/</span> <span>{api.title}</span>
+        <Link data-analytics-id="api-breadcrumb" to="/apis">APIs</Link> <span aria-hidden="true">/</span> <span>{api.title}</span>
       </nav>
       <Heading as="h1">{api.title}</Heading>
       <p className={styles.summary}>{api.summary}</p>
@@ -18,7 +18,7 @@ export default function ApiHeader({api}) {
         <div>
           <dt>Source commit</dt>
           <dd>
-            <a href={api.model.commitUrl} title={api.model.commit}>
+            <a href={api.model.commitUrl} title={api.model.commit} data-analytics-destination="models_source">
               <span aria-hidden="true">{api.model.commit.slice(0, 12)}</span>
               <span className="sr-only">{api.model.commit}</span>
             </a>

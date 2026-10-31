@@ -1,18 +1,16 @@
 import React, {useState} from 'react';
-import {useLocation} from '@docusaurus/router';
 import {EVENTS, track} from '@site/src/lib/analytics';
 import styles from './styles.module.css';
 
-// "Was this helpful?" widget. Votes go to CloudWatch RUM as custom events,
-// so there is no backend to run and no GitHub sign-in required.
-export default function Helpful({contentType}) {
-  const {pathname} = useLocation();
+// Feedback acknowledgement is local UI state. Analytics is optional and can
+// never prevent a visitor from completing the action.
+export default function Helpful() {
   const [vote, setVote] = useState(null);
 
   const send = (value) => {
     if (vote) return;
     setVote(value);
-    track(EVENTS.helpfulVote, {page: pathname, contentType, helpful: value === 'yes'});
+    track(EVENTS.helpfulVote, {helpful: value === 'yes'});
   };
 
   if (vote) {

@@ -10,7 +10,7 @@ export default function LicensePage({data}) {
         <Heading as="h1">{data.title}</Heading>
         <p>
           Exact text from the pinned source at <code>{data.commit}</code>.{' '}
-          <a href={data.sourceUrl}>View the original file</a>.
+          <a href={data.sourceUrl} data-analytics-destination={data.repositoryUrl.includes('api-models') ? 'models_source' : 'samples_source'}>View the original file</a>.
         </p>
         <pre className={styles.licenseText}>{data.text}</pre>
       </main>

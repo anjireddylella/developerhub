@@ -8,12 +8,14 @@ function Recipe({entry}) {
   return (
     <div>
       <p className={styles.excerptLabel}>Exact excerpt from the pinned source.</p>
-      <AnalyticsCodeBlock language={entry.language}>{entry.excerpt}</AnalyticsCodeBlock>
+      <AnalyticsCodeBlock codeId={entry.codeId} language={entry.language}>
+        {entry.excerpt}
+      </AnalyticsCodeBlock>
       <p>
         Source commit <code>{entry.commit}</code>, path <code>{entry.sourcePath}</code>.{' '}
-        <a href={entry.sourceUrl}>View exact original file</a> for imports and omitted setup.{' '}
-        <a href={entry.licenseRoute}>Local sample code license</a> ·{' '}
-        <a href={entry.licenseUrl}>Pinned upstream license</a>.
+        <a href={entry.sourceUrl} data-analytics-destination="samples_source">View exact original file</a> for imports and omitted setup.{' '}
+        <a href={entry.licenseRoute} data-analytics-id="api-local-license">Local sample code license</a> ·{' '}
+        <a href={entry.licenseUrl} data-analytics-destination="samples_source">Pinned upstream license</a>.
       </p>
       {entry.note && <p>{entry.note}</p>}
     </div>

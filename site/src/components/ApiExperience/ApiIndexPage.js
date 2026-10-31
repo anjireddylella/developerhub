@@ -16,7 +16,7 @@ export default function ApiIndexPage({data}) {
         <ul className={styles.cardGrid}>
           {data.apis.map((api) => (
             <li key={api.slug}>
-              <Link className={`card ${styles.card}`} to={`/apis/${api.slug}`}>
+              <Link data-analytics-id="api-card" className={`card ${styles.card}`} to={`/apis/${api.slug}`}>
                 <div className="card__header">
                   <Heading as="h2">{api.title}</Heading>
                 </div>

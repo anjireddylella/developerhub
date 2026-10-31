@@ -29,13 +29,13 @@ function Thread({number}) {
   );
 }
 
-export default function GiscusThread({number, url}) {
+export default function GiscusThread({number, url, section}) {
   const {siteConfig} = useDocusaurusContext();
   if (!siteConfig.customFields.giscus?.repoId) {
     return (
       <div className="alert alert--info" role="note">
         Replies and voting appear here once Giscus is configured (set <code>GISCUS_REPO_ID</code>).
-        Until then, view this thread on <a href={url}>GitHub</a>.
+        Until then, view this thread on <a href={url} data-analytics-destination="developer_hub_discussion" data-community-action="open_discussion" data-community-section={section}>GitHub</a>.
       </div>
     );
   }

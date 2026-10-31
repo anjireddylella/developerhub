@@ -15,7 +15,12 @@ export default function Resources() {
             <ul>
               {group.items.map((r) => (
                 <li key={r.id} id={r.id}>
-                  <a href={r.href}>{r.title}</a>: {r.description}
+                  <a
+                    href={r.href}
+                    data-analytics-destination={r.id === 'api-models' ? 'models_source' : r.id === 'api-samples' ? 'samples_source' : r.id === 'sp-api-documentation' || r.id === 'connecting-to-sp-api' ? 'official_docs' : 'other'}
+                    data-analytics-resource-id={`resource/${r.id}`}>
+                    {r.title}
+                  </a>: {r.description}
                 </li>
               ))}
             </ul>

@@ -1,9 +1,12 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import {
+  ANALYTICS_CATALOG_LIMITS,
   CATALOG_LIMITS,
   sensitiveValueRules,
+  serializeAnalyticsCatalog,
   utf8Bytes,
+  validateAnalyticsCatalog,
   validateBaseCatalog,
   validateCatalogRecords,
 } from './catalogValidation.js';
@@ -64,5 +67,46 @@ test('rejects sensitive values without exposing the matched value', () => {
   assert.throws(
     () => validateCatalogRecords([record({summary: secret})], {maxRecords: 1, maxBytes: 10000}),
     (error) => error.message.includes('email') && !error.message.includes(secret),
+  );
+});
+
+function analyticsCatalog(overrides = {}) {
+  return {
+    version: 1,
+    contexts: [{
+      route: '/apis/orders',
+      pageId: '/apis/orders',
+      content_id: 'api/orders',
+      content_type: 'api',
+      api_family: 'orders',
+      language: 'none',
+      selling_partner_scope: 'unknown',
+      developer_type: 'unknown',
+    }],
+    codeIds: ['model/orders'],
+    navigationIds: ['api-card'],
+    resourceIds: ['resource/api-models'],
+    ...overrides,
+  };
+}
+
+test('validates exact analytics catalog keys, ordering, and set limits', () => {
+  assert.equal(validateAnalyticsCatalog(analyticsCatalog()).version, 1);
+  assert.throws(() => validateAnalyticsCatalog({...analyticsCatalog(), extra: true}), /top-level-keys/);
+  assert.throws(() => validateAnalyticsCatalog(analyticsCatalog({codeIds: ['model/orders', 'model/orders']})), /code-id/);
+  assert.throws(
+    () => validateAnalyticsCatalog(analyticsCatalog({navigationIds: Array.from({length: ANALYTICS_CATALOG_LIMITS.navigationIds + 1}, (_, index) => `nav-${String(index).padStart(3, '0')}`)})),
+    /navigation-limit/,
+  );
+  assert.throws(() => validateAnalyticsCatalog(analyticsCatalog({resourceIds: ['resource/é']})), /resource-id/);
+});
+
+test('caps and safely escapes serialized analytics catalogs', () => {
+  const serialized = serializeAnalyticsCatalog(analyticsCatalog());
+  assert.ok(utf8Bytes(serialized) < ANALYTICS_CATALOG_LIMITS.totalBytes);
+  assert.deepEqual(JSON.parse(serialized), analyticsCatalog());
+  assert.throws(
+    () => validateAnalyticsCatalog(analyticsCatalog({contexts: Array.from({length: ANALYTICS_CATALOG_LIMITS.contexts + 1}, () => analyticsCatalog().contexts[0])})),
+    /contexts-limit/,
   );
 });
