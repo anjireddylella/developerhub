@@ -1,0 +1,130 @@
+.page {
+  max-width: 76rem;
+}
+
+.summary {
+  max-width: 48rem;
+  font-size: 1.15rem;
+}
+
+.breadcrumb,
+.sectionNav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.metadata,
+.compactMetadata {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem 1.5rem;
+}
+
+.metadata div,
+.compactMetadata div {
+  min-width: 0;
+}
+
+.metadata dt,
+.compactMetadata dt {
+  font-weight: 700;
+}
+
+.metadata dd,
+.compactMetadata dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.scope,
+.excerptLabel {
+  color: var(--ifm-color-emphasis-700);
+}
+
+.attribution,
+.emptyState {
+  padding: 1rem;
+  border: 1px solid var(--ifm-color-emphasis-300);
+  border-radius: var(--ifm-global-radius);
+  background: var(--ifm-color-emphasis-100);
+}
+
+.attribution {
+  margin: 1.5rem 0;
+}
+
+.attribution p:last-of-type,
+.attribution ul:last-child {
+  margin-bottom: 0;
+}
+
+.cardGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+  padding: 0;
+  list-style: none;
+}
+
+.card {
+  display: block;
+  height: 100%;
+  color: inherit;
+}
+
+.card:hover {
+  text-decoration: none;
+  box-shadow: var(--ifm-global-shadow-md);
+}
+
+.tableScroll {
+  max-width: 100%;
+  overflow-x: auto;
+}
+
+.tableScroll table {
+  width: 100%;
+  min-width: 48rem;
+}
+
+.tableScroll code {
+  overflow-wrap: anywhere;
+  white-space: normal;
+}
+
+.method {
+  display: inline-block;
+  padding: 0.15rem 0.4rem;
+  border: 1px solid currentColor;
+  border-radius: 0.25rem;
+  font-weight: 700;
+}
+
+.recipe {
+  margin-bottom: 2rem;
+}
+
+.licenseText {
+  max-width: 100%;
+  overflow: auto;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 767px) {
+  .metadata,
+  .compactMetadata,
+  .cardGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .sectionNav a {
+    padding: 0.25rem 0;
+  }
+
+  .page :global(.button) {
+    max-width: 100%;
+  }
+}

@@ -29,9 +29,9 @@ const CARDS = [
     body: 'Suggest improvements and vote on the ideas you want most.',
   },
   {
-    title: 'Resources',
-    to: '/resources',
-    body: 'API models, code samples, SDKs, and the MCP server in one list.',
+    title: 'Explore APIs',
+    to: '/apis',
+    body: 'Read curated model summaries and exact code excerpts from pinned SP-API sources.',
   },
 ];
 

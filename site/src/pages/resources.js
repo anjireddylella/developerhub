@@ -14,7 +14,7 @@ export default function Resources() {
             <Heading as="h2">{group.group}</Heading>
             <ul>
               {group.items.map((r) => (
-                <li key={r.href}>
+                <li key={r.id} id={r.id}>
                   <a href={r.href}>{r.title}</a>: {r.description}
                 </li>
               ))}

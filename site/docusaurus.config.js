@@ -36,7 +36,7 @@ const config = {
 
   clientModules: ['./src/clientModules/analytics.js'],
 
-  plugins: ['./plugins/community'],
+  plugins: ['./plugins/api-content', './plugins/community'],
 
   presets: [
     [
@@ -81,10 +81,12 @@ const config = {
         },
         items: [
           {type: 'docSidebar', sidebarId: 'docs', position: 'left', label: 'Docs'},
+          {to: '/apis', label: 'APIs', position: 'left'},
           {to: '/blog', label: 'Hot topics', position: 'left'},
           {to: '/community/questions', label: 'Questions', position: 'left'},
           {to: '/community/ideas', label: 'Ideas', position: 'left'},
           {to: '/resources', label: 'Resources', position: 'left'},
+          {to: '/search', label: 'Search', position: 'left'},
           {href: repoUrl, label: 'GitHub', position: 'right'},
         ],
       },
@@ -95,6 +97,7 @@ const config = {
             title: 'Learn',
             items: [
               {label: 'Start here', to: '/docs/intro'},
+              {label: 'APIs', to: '/apis'},
               {label: 'Hot topics', to: '/blog'},
               {label: 'Resources', to: '/resources'},
             ],
@@ -111,6 +114,9 @@ const config = {
             items: [
               {label: 'API models', href: 'https://github.com/amzn/selling-partner-api-models'},
               {label: 'Code samples', href: 'https://github.com/amzn/selling-partner-api-samples'},
+              {label: 'Model license', to: '/licenses/selling-partner-api-models/license'},
+              {label: 'Model NOTICE', to: '/licenses/selling-partner-api-models/notice'},
+              {label: 'Sample code license', to: '/licenses/selling-partner-api-samples/license'},
             ],
           },
         ],
