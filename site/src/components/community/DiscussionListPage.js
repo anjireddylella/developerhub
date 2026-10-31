@@ -29,9 +29,20 @@ export default function DiscussionListPage({data}) {
 
         <PrivacyNotice />
         {source === 'sample' && <SampleDataNotice />}
+        {section.unavailableCount > 0 && (
+          <div className="alert alert--secondary margin-bottom--md" role="status">
+            {section.unavailableCount}{' '}
+            {section.unavailableCount === 1 ? 'discussion could' : 'discussions could'} not be
+            displayed.{' '}
+            <a href={section.openUrl} target="_blank" rel="noopener noreferrer">
+              Open discussions on GitHub
+              <span className="sr-only"> (opens GitHub in a new tab)</span>
+            </a>
+          </div>
+        )}
 
         {items.length === 0 ? (
-          <p>Nothing here yet. Be the first to post.</p>
+          <p>No discussions are currently available.</p>
         ) : (
           <ul className={styles.list}>
             {items.map((item) => (

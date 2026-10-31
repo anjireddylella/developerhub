@@ -1,17 +1,21 @@
-// Build-time plugin that turns GitHub Discussions into pages on the hub.
-//
-// With HUB_GITHUB_TOKEN set, it reads the Q&A and Ideas categories through the
-// GitHub GraphQL API. Without a token it falls back to sample-data.json so the
-// site builds locally with no credentials. In CI (CI=true) a failed fetch fails
-// the build instead of silently publishing sample data.
+// Build-time plugin that turns validated GitHub Discussions into bounded hub pages.
 
 import {readFile} from 'node:fs/promises';
 import path from 'node:path';
 import {fileURLToPath} from 'node:url';
 import hub from '../../hub.config.js';
+import {
+  COMMUNITY_LIMITS,
+  CommunityValidationError,
+  isPreparedCommunityContent,
+  logQuarantine,
+  prepareCommunityContent,
+  validateCommunitySearch,
+} from './communityValidation.js';
+import {utf8Bytes} from '../api-content/catalogValidation.js';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
-const MAX_PER_CATEGORY = 100;
+const MAX_PER_CATEGORY = COMMUNITY_LIMITS.fetchedPerSection;
 
 const DISCUSSIONS_QUERY = `
 query($owner: String!, $name: String!, $categoryId: ID!, $first: Int!) {
@@ -44,7 +48,7 @@ query($owner: String!, $name: String!) {
 }`;
 
 async function graphql(token, query, variables) {
-  const res = await fetch('https://api.github.com/graphql', {
+  const response = await fetch('https://api.github.com/graphql', {
     method: 'POST',
     headers: {
       Authorization: `Bearer ${token}`,
@@ -53,35 +57,10 @@ async function graphql(token, query, variables) {
     },
     body: JSON.stringify({query, variables}),
   });
-  if (!res.ok) {
-    throw new Error(`GitHub GraphQL HTTP ${res.status}`);
-  }
-  const json = await res.json();
-  if (json.errors?.length) {
-    throw new Error(`GitHub GraphQL: ${json.errors.map((e) => e.message).join('; ')}`);
-  }
+  if (!response.ok) throw new Error(`GitHub GraphQL HTTP ${response.status}`);
+  const json = await response.json();
+  if (json.errors?.length) throw new Error('GitHub GraphQL returned errors');
   return json.data;
-}
-
-// Votes on the hub are 👍 reactions (what Giscus exposes) plus native
-// GitHub upvotes, so both ways of voting count.
-function normalize(d) {
-  const thumbsUp =
-    d.reactionGroups?.find((g) => g.content === 'THUMBS_UP')?.reactors?.totalCount ?? 0;
-  return {
-    number: d.number,
-    title: d.title,
-    url: d.url,
-    bodyHTML: d.bodyHTML,
-    createdAt: d.createdAt,
-    updatedAt: d.updatedAt,
-    isAnswered: Boolean(d.isAnswered),
-    locked: Boolean(d.locked),
-    author: d.author ? {login: d.author.login, avatarUrl: d.author.avatarUrl} : null,
-    replies: d.comments?.totalCount ?? 0,
-    labels: (d.labels?.nodes ?? []).map((l) => ({name: l.name, color: l.color})),
-    votes: (d.upvoteCount ?? 0) + thumbsUp,
-  };
 }
 
 async function fetchLive(token) {
@@ -90,17 +69,15 @@ async function fetchLive(token) {
   const all = data.repository?.discussionCategories?.nodes ?? [];
 
   const load = async (slug) => {
-    const category = all.find((c) => c.slug === slug);
-    if (!category) {
-      throw new Error(`Discussion category "${slug}" not found in ${owner}/${name}`);
-    }
+    const category = all.find((candidate) => candidate.slug === slug);
+    if (!category) throw new Error('Required discussion category was not found');
     const result = await graphql(token, DISCUSSIONS_QUERY, {
       owner,
       name,
       categoryId: category.id,
       first: MAX_PER_CATEGORY,
     });
-    return result.repository.discussions.nodes.map(normalize);
+    return result.repository?.discussions?.nodes ?? [];
   };
 
   const [questions, ideas] = await Promise.all([load(categories.questions), load(categories.ideas)]);
@@ -109,11 +86,247 @@ async function fetchLive(token) {
 
 async function loadSample() {
   const raw = JSON.parse(await readFile(path.join(here, 'sample-data.json'), 'utf8'));
+  return {source: 'sample', questions: raw.questions, ideas: raw.ideas};
+}
+
+function sectionDefinitions(content) {
+  const {owner, name, categories} = hub.github;
+  const repositoryUrl = `https://github.com/${owner}/${name}`;
+  return [
+    {
+      key: 'questions',
+      title: 'Questions',
+      description:
+        'Ask the SP-API developer community and help others. Answers and votes happen right here.',
+      items: content.questions.items,
+      unavailableCount: content.questions.unavailableCount,
+      category: categories.questions,
+      newUrl: `${repositoryUrl}/discussions/new?category=${categories.questions}`,
+      openUrl: `${repositoryUrl}/discussions/categories/${categories.questions}`,
+      newLabel: 'Ask a question',
+    },
+    {
+      key: 'ideas',
+      title: 'Ideas',
+      description:
+        'Suggest improvements to SP-API and vote for the ideas you want most. Use 👍 on an idea to vote.',
+      items: content.ideas.items,
+      unavailableCount: content.ideas.unavailableCount,
+      category: categories.ideas,
+      newUrl: `${repositoryUrl}/discussions/new?category=${categories.ideas}`,
+      openUrl: `${repositoryUrl}/discussions/categories/${categories.ideas}`,
+      newLabel: 'Submit an idea',
+    },
+  ];
+}
+
+function boundedAuthored(value, limit, rule) {
+  if (typeof value !== 'string' || value.length === 0 || utf8Bytes(value) > limit) {
+    throw new CommunityValidationError(rule);
+  }
+}
+
+function sectionProjection(section) {
+  const basePath = `/community/${section.key}`;
+  boundedAuthored(section.key, 10, 'section-key');
+  if (!['questions', 'ideas'].includes(section.key)) throw new CommunityValidationError('section-key');
+  boundedAuthored(section.title, 40, 'section-title');
+  boundedAuthored(section.description, 320, 'section-description');
+  boundedAuthored(section.newLabel, 80, 'section-new-label');
+  boundedAuthored(basePath, 80, 'section-base-path');
+  boundedAuthored(section.newUrl, 240, 'section-new-url');
+  boundedAuthored(section.openUrl, 240, 'section-open-url');
+  const canonicalBase = 'https://github.com/anjireddylella/developerhub/discussions/';
+  if (!section.newUrl.startsWith(`${canonicalBase}new?category=`)) {
+    throw new CommunityValidationError('section-new-url');
+  }
+  if (!section.openUrl.startsWith(`${canonicalBase}categories/`)) {
+    throw new CommunityValidationError('section-open-url');
+  }
   return {
-    source: 'sample',
-    questions: raw.questions.map(normalize),
-    ideas: raw.ideas.map(normalize),
+    key: section.key,
+    title: section.title,
+    description: section.description,
+    newUrl: section.newUrl,
+    openUrl: section.openUrl,
+    newLabel: section.newLabel,
+    basePath,
+    unavailableCount: section.unavailableCount,
   };
+}
+
+const listItem = ({number, title, updatedAt, isAnswered, locked, author, replies, labels, votes}) => ({
+  number,
+  title,
+  updatedAt,
+  isAnswered,
+  locked,
+  author,
+  replies,
+  labels,
+  votes,
+});
+
+const homeItem = ({number, title, votes, replies, isAnswered}) => ({
+  number,
+  title,
+  votes,
+  replies,
+  isAnswered,
+});
+
+function searchItem(section, item) {
+  return {
+    number: item.number,
+    title: item.title,
+    labels: item.labels.map((label) => label.name),
+    section: section.key,
+    route: `/community/${section.key}/${item.number}`,
+  };
+}
+
+function jsonBytes(value) {
+  return utf8Bytes(JSON.stringify(value));
+}
+
+function recordAggregateDrop(content, section, item, logger) {
+  logQuarantine(logger, section.key, item.number, 'aggregate-size');
+  section.unavailableCount = Math.min(
+    section.unavailableCount + 1,
+    COMMUNITY_LIMITS.fetchedPerSection,
+  );
+  content[section.key].unavailableCount = section.unavailableCount;
+}
+
+function removeLowestPriority(content, sections, logger) {
+  const candidates = sections.filter((section) => section.items.length > 0);
+  if (!candidates.length) return false;
+  const section = candidates.sort((a, b) => b.items.length - a.items.length)[0];
+  const item = section.items.pop();
+  content[section.key].items = section.items;
+  recordAggregateDrop(content, section, item, logger);
+  return true;
+}
+
+function handleAggregateOverflow(content, sections, source, logger, rule) {
+  if (source === 'sample') throw new CommunityValidationError(rule);
+  if (!removeLowestPriority(content, sections, logger)) throw new CommunityValidationError(rule);
+}
+
+export function buildCommunityPayloads(
+  preparedContent,
+  {logger = console.warn, limits = COMMUNITY_LIMITS} = {},
+) {
+  const content = {
+    source: preparedContent.source,
+    questions: {
+      items: [...preparedContent.questions.items],
+      unavailableCount: preparedContent.questions.unavailableCount,
+    },
+    ideas: {
+      items: [...preparedContent.ideas.items],
+      unavailableCount: preparedContent.ideas.unavailableCount,
+    },
+  };
+  const sections = sectionDefinitions(content);
+
+  for (const section of sections) {
+    for (let index = section.items.length - 1; index >= 0; index -= 1) {
+      const item = section.items[index];
+      const thread = {
+        section: {key: section.key, title: section.title, basePath: `/community/${section.key}`},
+        source: content.source,
+        item,
+      };
+      if (jsonBytes(thread) <= limits.threadModule) continue;
+      if (content.source === 'sample') throw new CommunityValidationError(`${section.key}:thread-size`);
+      section.items.splice(index, 1);
+      content[section.key].items = section.items;
+      recordAggregateDrop(content, section, item, logger);
+    }
+  }
+
+  for (const section of sections) {
+    while (true) {
+      const list = {
+        section: sectionProjection(section),
+        source: content.source,
+        items: section.items.map(listItem),
+      };
+      if (jsonBytes(list) <= limits.listModule) break;
+      handleAggregateOverflow(content, [section], content.source, logger, `${section.key}:list-size`);
+    }
+  }
+
+  const makeHome = () => ({
+    source: content.source,
+    latestQuestions: sections[0].items.slice(0, 3).map(homeItem),
+    topIdeas: sections[1].items.slice(0, 3).map(homeItem),
+  });
+  while (jsonBytes(makeHome()) > limits.homeModule) {
+    handleAggregateOverflow(content, sections, content.source, logger, 'home:aggregate-size');
+  }
+
+  const makeSearch = () => sections.flatMap((section) => section.items.map((item) => searchItem(section, item)));
+  while (jsonBytes(makeSearch()) > limits.searchModule) {
+    handleAggregateOverflow(content, sections, content.source, logger, 'community-search:aggregate-size');
+  }
+
+  const lists = sections.map((section) => ({
+    key: section.key,
+    data: {
+      section: sectionProjection(section),
+      source: content.source,
+      items: section.items.map(listItem),
+    },
+  }));
+  const threads = sections.flatMap((section) => section.items.map((item) => ({
+    key: section.key,
+    number: item.number,
+    data: {
+      section: {key: section.key, title: section.title, basePath: `/community/${section.key}`},
+      source: content.source,
+      item,
+    },
+  })));
+  const communitySearch = validateCommunitySearch(makeSearch());
+  const home = makeHome();
+  if (jsonBytes(home) > limits.homeModule || jsonBytes(communitySearch) > limits.searchModule) {
+    throw new CommunityValidationError('global-data-size');
+  }
+  return {lists, threads, globalData: {...home, communitySearch}};
+}
+
+export async function serializeCommunityContent(content, actions, options = {}) {
+  const prepared = isPreparedCommunityContent(content)
+    ? content
+    : prepareCommunityContent(content, options);
+  const payloads = buildCommunityPayloads(prepared, options);
+  const {createData, addRoute, setGlobalData} = actions;
+
+  for (const list of payloads.lists) {
+    const listData = await createData(`${list.key}-list.json`, JSON.stringify(list.data));
+    addRoute({
+      path: `/community/${list.key}`,
+      component: '@site/src/components/community/DiscussionListPage',
+      modules: {data: listData},
+      exact: true,
+    });
+  }
+  for (const thread of payloads.threads) {
+    const threadData = await createData(
+      `${thread.key}-${thread.number}.json`,
+      JSON.stringify(thread.data),
+    );
+    addRoute({
+      path: `/community/${thread.key}/${thread.number}`,
+      component: '@site/src/components/community/DiscussionPage',
+      modules: {data: threadData},
+      exact: true,
+    });
+  }
+  setGlobalData(payloads.globalData);
+  return payloads;
 }
 
 export default function communityPlugin() {
@@ -124,111 +337,19 @@ export default function communityPlugin() {
       const token = process.env.HUB_GITHUB_TOKEN;
       if (!token) {
         console.warn('[hub-community] HUB_GITHUB_TOKEN not set, using sample discussions.');
-        return loadSample();
+        return prepareCommunityContent(await loadSample());
       }
       try {
-        return await fetchLive(token);
-      } catch (err) {
-        if (process.env.CI) {
-          throw err;
-        }
-        console.warn(`[hub-community] ${err.message}. Falling back to sample discussions.`);
-        return loadSample();
+        return prepareCommunityContent(await fetchLive(token));
+      } catch (error) {
+        if (process.env.CI) throw error;
+        console.warn('[hub-community] Live discussions unavailable; using sample discussions.');
+        return prepareCommunityContent(await loadSample());
       }
     },
 
     async contentLoaded({content, actions}) {
-      const {createData, addRoute, setGlobalData} = actions;
-      const {owner, name, categories} = hub.github;
-      const repoUrl = `https://github.com/${owner}/${name}`;
-
-      const sections = [
-        {
-          key: 'questions',
-          title: 'Questions',
-          description:
-            'Ask the SP-API developer community and help others. Answers and votes happen right here.',
-          items: content.questions,
-          // Most recently active first.
-          sort: (a, b) => b.updatedAt.localeCompare(a.updatedAt),
-          newUrl: `${repoUrl}/discussions/new?category=${categories.questions}`,
-          newLabel: 'Ask a question',
-        },
-        {
-          key: 'ideas',
-          title: 'Ideas',
-          description:
-            'Suggest improvements to SP-API and vote for the ideas you want most. Use 👍 on an idea to vote.',
-          items: content.ideas,
-          // Most votes first.
-          sort: (a, b) => b.votes - a.votes || b.updatedAt.localeCompare(a.updatedAt),
-          newUrl: `${repoUrl}/discussions/new?category=${categories.ideas}`,
-          newLabel: 'Submit an idea',
-        },
-      ];
-
-      for (const s of sections) {
-        const sorted = [...s.items].sort(s.sort);
-        const basePath = `/community/${s.key}`;
-
-        // List page gets summaries only, so the list bundle stays small.
-        const summaries = sorted.map(({bodyHTML, ...rest}) => rest);
-        const listData = await createData(
-          `${s.key}-list.json`,
-          JSON.stringify({
-            section: {
-              key: s.key,
-              title: s.title,
-              description: s.description,
-              newUrl: s.newUrl,
-              newLabel: s.newLabel,
-              basePath,
-            },
-            source: content.source,
-            items: summaries,
-          }),
-        );
-        addRoute({
-          path: basePath,
-          component: '@site/src/components/community/DiscussionListPage',
-          modules: {data: listData},
-          exact: true,
-        });
-
-        for (const item of sorted) {
-          const threadData = await createData(
-            `${s.key}-${item.number}.json`,
-            JSON.stringify({
-              section: {key: s.key, title: s.title, basePath},
-              source: content.source,
-              item,
-            }),
-          );
-          addRoute({
-            path: `${basePath}/${item.number}`,
-            component: '@site/src/components/community/DiscussionPage',
-            modules: {data: threadData},
-            exact: true,
-          });
-        }
-      }
-
-      // Small slice for the home page.
-      const pick = ({number, title, votes, replies, isAnswered}) => ({
-        number,
-        title,
-        votes,
-        replies,
-        isAnswered,
-      });
-      setGlobalData({
-        source: content.source,
-        latestQuestions: [...content.questions]
-          .sort(sections[0].sort)
-          .slice(0, 3)
-          .map(pick),
-        topIdeas: [...content.ideas].sort(sections[1].sort).slice(0, 3).map(pick),
-      });
+      await serializeCommunityContent(content, actions);
     },
   };
 }

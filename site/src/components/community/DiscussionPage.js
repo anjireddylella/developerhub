@@ -29,9 +29,8 @@ export default function DiscussionPage({data}) {
                   {item.author?.login ?? 'unknown'} · posted {formatDate(item.createdAt)}
                 </span>
               </div>
-              {/* bodyHTML is rendered and sanitized by GitHub. Rendering it here
-                  keeps the question in the page HTML so search engines index it. */}
-              <div className={styles.body} dangerouslySetInnerHTML={{__html: item.bodyHTML}} />
+              {/* The build-time community boundary sanitizes safeBodyHtml before serialization. */}
+              <div className={styles.body} dangerouslySetInnerHTML={{__html: item.safeBodyHtml}} />
             </article>
 
             <PrivacyNotice />

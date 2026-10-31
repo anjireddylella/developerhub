@@ -7,7 +7,7 @@
 
 const env = process.env;
 
-const [owner, name] = (env.HUB_GITHUB_REPO || 'amzn/selling-partner-api-hub').split('/');
+const [owner, name] = 'anjireddylella/developerhub'.split('/');
 
 export default {
   github: {

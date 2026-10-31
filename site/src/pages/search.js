@@ -14,28 +14,19 @@ const SHORTCUTS = [
 ];
 
 function communityRecords(community) {
-  return [
-    ...(community?.latestQuestions || []).map((item) => ({
-      id: `question/${item.number}`,
+  return (community?.communitySearch || []).map((item) => {
+    const contentType = item.section === 'questions' ? 'question' : 'idea';
+    return {
+      id: `${contentType}/${item.number}`,
       title: item.title,
-      summary: 'Community question stored in GitHub Discussions.',
-      route: `/community/questions/${item.number}`,
+      summary: `Community ${contentType} stored in GitHub Discussions.`,
+      route: item.route,
       apiFamily: 'cross-cutting',
       language: 'none',
-      contentType: 'question',
-      labels: ['Questions'],
-    })),
-    ...(community?.topIdeas || []).map((item) => ({
-      id: `idea/${item.number}`,
-      title: item.title,
-      summary: 'Community idea stored in GitHub Discussions.',
-      route: `/community/ideas/${item.number}`,
-      apiFamily: 'cross-cutting',
-      language: 'none',
-      contentType: 'idea',
-      labels: ['Ideas'],
-    })),
-  ];
+      contentType,
+      labels: item.labels,
+    };
+  });
 }
 
 function rank(record, query) {
