@@ -67,7 +67,7 @@ test('enforces adapted attribution, pinned links, and engagement host', async ()
     source_discussion: source,
     source_category: 'Orders Management',
     engagement_discussion: 'https://github.com/other/repo/discussions/6',
-  }) + `\n:::note Source attribution\nAdapted from [the source](${source}).\n:::\n\n[Unpinned](https://github.com/amzn/selling-partner-api-models/blob/main/model.json)\n`;
+  }) + `\n:::note[Source attribution]\nAdapted from [the source](${source}).\n:::\n\n[Unpinned](https://github.com/amzn/selling-partner-api-models/blob/main/model.json)\n`;
   const result = await validateBlogSource({buffer: Buffer.from(post), filePath: '/tmp/2026-02-01-example-topic.md'});
   assert.match(result.errors.join('\n'), /Developer Hub discussion/);
   assert.match(result.errors.join('\n'), /unpinned source file/);
@@ -104,7 +104,7 @@ test('authoring creates one valid adapted post', async (t) => {
 
   assert.equal(path.basename(outputPath), '2026-02-01-a-new-orders-guide.md');
   const source = await readFile(outputPath, 'utf8');
-  assert.match(source, /:::note Source attribution/);
+  assert.match(source, /:::note\[Source attribution\]/);
   assert.match(source, /engagement_discussion: "https:\/\/github.com\/anjireddylella\/developerhub\/discussions\/6"/);
   assert.deepEqual(await validateContent({blogDir: path.join(siteDir, 'blog')}), {files: 1});
 });

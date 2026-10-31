@@ -117,7 +117,7 @@ export async function createHotTopic(argv, {
   }
 
   const attribution = options.provenance === 'adapted'
-    ? `\n:::note Source attribution\nThis post adapts [the original discussion](${options['source-discussion']}). Read the source for the complete guidance.\n:::\n`
+    ? `\n:::note[Source attribution]\nThis post adapts [the original discussion](${options['source-discussion']}). Read the source for the complete guidance.\n:::\n`
     : '';
   const relatedLinks = [];
   if (options['source-discussion']) relatedLinks.push(`- [Original source](${options['source-discussion']})`);

@@ -16,7 +16,7 @@ source_category: Orders Management
 engagement_discussion: https://github.com/anjireddylella/developerhub/discussions/6
 ---
 
-:::note Source attribution
+:::note[Source attribution]
 This is a shortened copy of [Discussion #253](https://github.com/amzn/selling-partner-api-samples/discussions/253) in `amzn/selling-partner-api-samples`, used to demo the Developer Hub. Read the original for the full guide and the Postman collection.
 :::
 

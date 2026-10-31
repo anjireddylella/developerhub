@@ -302,7 +302,7 @@ export async function validateBlogSource({buffer, filePath, knownRoutes = HUB_RO
       errors.push('adapted provenance requires source_discussion and source_category');
     }
     validateSourceDiscussion(errors, data);
-    const attribution = parsed.content.match(/:::note Source attribution\s*\n([\s\S]*?)\n:::/);
+    const attribution = parsed.content.match(/:::note\[Source attribution\]\s*\n([\s\S]*?)\n:::/);
     const linkedTargets = attribution ? [...attribution[1].matchAll(MARKDOWN_LINK)].map((match) => match[1]) : [];
     if (!attribution || !linkedTargets.includes(data.source_discussion)) {
       errors.push('adapted content requires a matching visible source attribution link');

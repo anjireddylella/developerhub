@@ -2,10 +2,10 @@
 
 ## Test context
 
-- Date: 2026-10-31 (convergence rerun at 21:50 UTC)
+- Date: 2026-10-31 (review-finding rerun at 21:58 UTC)
 - Browser: Google Chrome 156.0.8078.79, headless, device scale factor 1
 - Site origin: `http://127.0.0.1:3000`
-- Tested site revision: `3354b9b` plus the verified API-guide URL correction in `site/api-content.config.js`.
+- Tested site revision: `d893498` plus the approved attribution-rendering and evidence corrections in this commit.
 - Environment: production build and server with GitHub, RUM, and AWS variables unset; sample Discussions were used
 - Browser evidence: `.agents/tasks/developer-hub-content-architecture/visual-verification/browser-checks.json` (workflow artifact, not committed)
 - Screenshot checksums: `.agents/tasks/developer-hub-content-architecture/visual-verification/SHA256SUMS` (workflow artifact, not committed)
@@ -75,7 +75,7 @@ Each cell records a browser pass. A pass required the exact pathname, requested 
 | Search truncation | Pass | A 201-character input was limited to 200 characters, retained input focus, and visibly/politely announced the limit. |
 | Focus, headings, and overflow | Pass | Every matrix row had focusable controls, one `h1`, ordered headings, and document width no greater than viewport width. Code and operations-table containers did not widen the page. |
 
-The two existing hot-topic pages visibly retain source attribution, source Discussion links, and engagement links. Their pre-existing `:::note Source attribution` delimiters render as inline text in the current site; this does not hide the attribution or break layout, but a later content-platform change can migrate the syntax to the Docusaurus 3 titled-admonition form together with its validator fixture.
+Both adapted hot-topic pages render source attribution as native Docusaurus titled notes. The rendered DOM retains distinct source Discussion and Developer Hub engagement links and contains no raw admonition delimiters.
 
 ## Link and source checks
 
@@ -112,19 +112,19 @@ Screenshots are 1280 by 900 CSS pixels and live only in the workflow artifact di
 | Screenshot | SHA-256 |
 |---|---|
 | `apis--light--1280.png` | `1e174ee719e2c8cc5069979d3644426b09c40372e1ce8e0728e755d51884ffd9` |
-| `apis--dark--1280.png` | `c0a3272778cce86407a9c75936e8fde905d08dc4ace157977d61b4956943688d` |
+| `apis--dark--1280.png` | `882a84d1c661ba9a45a242ba9a5702530e00210e60247b9a4caa222cce00c7c8` |
 | `apis--data-kiosk--light--1280.png` | `744cfe193011a88eddaaa067e825d5bbb30eee1eccbd85da4f3eee977ba85fc9` |
-| `apis--data-kiosk--dark--1280.png` | `bd1b1b2d100be82b27b4dc675f6a961fd55ea13cdd1e7061b3874a5ec9900872` |
+| `apis--data-kiosk--dark--1280.png` | `b15e6f8d732c8b748574d56bf3752b99a59b0c7c9f523ccc98f9a38e5057b277` |
 | `apis--orders--light--1280.png` | `7a8383150d9a2718af6079ae3b07139f70e933f783286c5f5b933094d8970aca` |
-| `apis--orders--dark--1280.png` | `5dfb313c7751c2624b649ec29929df8ad404ddc4ad2c8abf60b790df3e7dd8ca` |
+| `apis--orders--dark--1280.png` | `4cff1007a87ad3752e218a724e93b7e7aa5959fdb6cb00b13fc34a86cd8d08e0` |
 | `apis--vehicles--light--1280.png` | `a12935de4759fdebe0c7873fe5a9f1dadbb5de3706563d9054d661b52a7ebfe2` |
-| `apis--vehicles--dark--1280.png` | `de74e9028236b4750ee0d19d67a37c9e4dc09e96635dac7ec9e6d3fe040242c1` |
+| `apis--vehicles--dark--1280.png` | `3aedee5ba07e1a6e1f07572f63b6908842a2a34db01d0d630156e7847cbb2a23` |
 | `search--light--1280.png` | `35e38286dec1dea00f390670adde79631f2a7ba5e4d4aaa293df39ccba73f2c2` |
-| `search--dark--1280.png` | `8c3a33db2bed80bddcd3cbc3b258397cac2d8f2baa09b42ac8ceb2920914d988` |
-| `blog--orders-api-v2026-01-01-migration--light--1280.png` | `6f79869aa16bea29da140fd4625b363e99ddec3c05bf88148e28916cc20403f5` |
-| `blog--orders-api-v2026-01-01-migration--dark--1280.png` | `be631c1b1f71467e5f811aa346cea1a90930df15ecf0a3337c71875800e1791e` |
-| `blog--parsing-reports-efficiently--light--1280.png` | `1c2602b962e30cb621cfdaa5f17e686ac800cb329b2c628f8f7e2289f383d9a2` |
-| `blog--parsing-reports-efficiently--dark--1280.png` | `c637c7b29513264e4361b74b17f564dbd7bff66b2256bf75d0c5f288f4e2d000` |
+| `search--dark--1280.png` | `466b38526077c1a33f6dd3caa9960ca2f16faaf617c4dce0f6bb791c7f5690c7` |
+| `blog--orders-api-v2026-01-01-migration--light--1280.png` | `fd2c97d533cd4eae92c493e4216d02bfde22940316efa538b70999826724ad70` |
+| `blog--orders-api-v2026-01-01-migration--dark--1280.png` | `3edac963dd5b406ccd8e755fce39d10100c8e2229c759541625c30a29eb9dc28` |
+| `blog--parsing-reports-efficiently--light--1280.png` | `d0964523b8e565339d465c921e42d4b48d78aa624fbd281d1ebc54680c94ff7d` |
+| `blog--parsing-reports-efficiently--dark--1280.png` | `463158bb242482d595aa6ca3990a31acd1c9c8d986db4e2cce6a07450dfb2f07` |
 
 A fresh `shasum -a 256` run produced the same values written to `SHA256SUMS`.
 

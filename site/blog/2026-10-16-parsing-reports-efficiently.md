@@ -16,7 +16,7 @@ source_category: Reporting & Analytics
 engagement_discussion: https://github.com/anjireddylella/developerhub/discussions/7
 ---
 
-:::note Source attribution
+:::note[Source attribution]
 This is a shortened copy of [Discussion #588](https://github.com/amzn/selling-partner-api-samples/discussions/588) in `amzn/selling-partner-api-samples`, used to demo the Developer Hub. Read the original for all ten tips.
 :::
 
