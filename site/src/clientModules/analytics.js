@@ -12,6 +12,22 @@ import {EVENTS, getRumClient, setRumClient, track} from '../lib/analytics';
 const rumConfig = siteConfig.customFields?.rum ?? {};
 const enabled = Boolean(rumConfig.appMonitorId && rumConfig.identityPoolId);
 
+// RUM's performance telemetry records each resource's full URL, and the
+// Giscus iframe URL carries the visitor's Giscus session token. Skip Giscus
+// resources entirely. Passing `ignore` replaces aws-rum-web's default, so the
+// default rules (non-HTTP entries, fetch/XHR) are repeated here.
+function ignorePerformanceEntry(entry) {
+  if (entry.entryType !== 'resource') return false;
+  if (!/^https?:/.test(entry.name)) return true;
+  if (/^(fetch|xmlhttprequest)$/.test(entry.initiatorType)) return true;
+  try {
+    const {hostname} = new URL(entry.name);
+    return hostname === 'giscus.app' || hostname.endsWith('.giscus.app');
+  } catch {
+    return true;
+  }
+}
+
 if (ExecutionEnvironment.canUseDOM) {
   if (enabled) {
     import('aws-rum-web')
@@ -20,7 +36,7 @@ if (ExecutionEnvironment.canUseDOM) {
           identityPoolId: rumConfig.identityPoolId,
           endpoint: `https://dataplane.rum.${rumConfig.region}.amazonaws.com`,
           sessionSampleRate: rumConfig.sessionSampleRate,
-          telemetries: ['performance', 'errors'],
+          telemetries: [['performance', {ignore: ignorePerformanceEntry}], 'errors'],
           allowCookies: false,
           enableXRay: false,
           // We record page views ourselves so SPA navigation is counted.
