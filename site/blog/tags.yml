@@ -7,3 +7,23 @@ migrations:
   label: Migrations
   permalink: /migrations
   description: Deprecations and migration guides
+
+new-launch:
+  label: New launch
+  permalink: /new-launch
+  description: Newly launched APIs and features
+
+best-practices:
+  label: Best practices
+  permalink: /best-practices
+  description: Recommended patterns for SP-API integrations
+
+orders:
+  label: Orders
+  permalink: /orders
+  description: Orders API
+
+reports:
+  label: Reports
+  permalink: /reports
+  description: Reports API
