@@ -22,4 +22,22 @@ jobs:
           cache: npm
           cache-dependency-path: site/package-lock.json
       - run: npm ci
+      - run: npm run validate:content
+      - run: npm test
       - run: npm run build
+      - name: Upload static preview
+        id: upload-preview
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: developer-hub-preview
+          path: site/build
+          retention-days: 3
+          if-no-files-found: error
+      - name: Write preview instructions
+        run: |
+          echo '## Developer Hub preview' >> "$GITHUB_STEP_SUMMARY"
+          echo '' >> "$GITHUB_STEP_SUMMARY"
+          echo "1. Download [developer-hub-preview](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}/artifacts/${{ steps.upload-preview.outputs.artifact-id }})." >> "$GITHUB_STEP_SUMMARY"
+          echo '2. Unzip the downloaded artifact.' >> "$GITHUB_STEP_SUMMARY"
+          echo '3. Run `npx serve developer-hub-preview` from the directory containing the extracted folder.' >> "$GITHUB_STEP_SUMMARY"
+          echo '4. Open the local URL printed by `serve`.' >> "$GITHUB_STEP_SUMMARY"
