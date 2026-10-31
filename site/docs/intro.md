@@ -28,7 +28,7 @@ Send the access token in the `x-amz-access-token` header, along with a `user-age
 GET /catalog/2022-04-01/items/EXAMPLEASIN?marketplaceIds=ATVPDKIKX0DER HTTP/1.1
 host: sellingpartnerapi-na.amazon.com
 user-agent: MySellingTool/1.0 (Language=Java/21)
-x-amz-access-token: Atza|EXAMPLE
+x-amz-access-token: LWA_ACCESS_TOKEN_EXAMPLE
 x-amz-date: 20261026T120000Z
 ```
 

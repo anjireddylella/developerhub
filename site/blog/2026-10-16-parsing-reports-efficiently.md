@@ -9,12 +9,14 @@ description: Practical rules for parsing SP-API report documents without breakin
 content_id: topic/parsing-reports-efficiently
 content_type: hot_topic
 api_family: reports
-audience: both
+selling_partner_scope: both
+provenance: adapted
 source_discussion: https://github.com/amzn/selling-partner-api-samples/discussions/588
 source_category: Reporting & Analytics
+engagement_discussion: https://github.com/anjireddylella/developerhub/discussions/7
 ---
 
-:::note Demo copy
+:::note Source attribution
 This is a shortened copy of [Discussion #588](https://github.com/amzn/selling-partner-api-samples/discussions/588) in `amzn/selling-partner-api-samples`, used to demo the Developer Hub. Read the original for all ten tips.
 :::
 
@@ -38,6 +40,8 @@ The Reports code recipes (Java, Python, PHP) cover requesting, downloading, deco
 
 ## Related content
 
-- [Reports code recipes](https://github.com/amzn/selling-partner-api-samples/tree/main/code-recipes)
-- [Data Kiosk sample solution](https://github.com/amzn/selling-partner-api-samples/tree/main/use-cases/data-kiosk)
+- [Explore the Data Kiosk API in Developer Hub](pathname:///apis/data-kiosk)
+- [Reports code recipes](https://github.com/amzn/selling-partner-api-samples/tree/21589c4a467d433c2cb95e80ae61eb28213f2d67/code-recipes)
+- [Data Kiosk sample solution](https://github.com/amzn/selling-partner-api-samples/tree/21589c4a467d433c2cb95e80ae61eb28213f2d67/use-cases/data-kiosk)
 - [Original discussion](https://github.com/amzn/selling-partner-api-samples/discussions/588)
+- [Discuss this topic in Developer Hub](https://github.com/anjireddylella/developerhub/discussions/7)

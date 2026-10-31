@@ -9,12 +9,14 @@ description: Move from Orders API v0 to v2026-01-01 with fewer calls and no Rest
 content_id: topic/orders-v2026-01-01-migration
 content_type: hot_topic
 api_family: orders
-audience: seller
+selling_partner_scope: seller
+provenance: adapted
 source_discussion: https://github.com/amzn/selling-partner-api-samples/discussions/253
 source_category: Orders Management
+engagement_discussion: https://github.com/anjireddylella/developerhub/discussions/6
 ---
 
-:::note Demo copy
+:::note Source attribution
 This is a shortened copy of [Discussion #253](https://github.com/amzn/selling-partner-api-samples/discussions/253) in `amzn/selling-partner-api-samples`, used to demo the Developer Hub. Read the original for the full guide and the Postman collection.
 :::
 
@@ -53,6 +55,8 @@ Check that your app can reach the new endpoints, has the roles needed for buyer 
 
 ## Related content
 
-- [Orders API model (orders_2026-01-01.json)](https://github.com/amzn/selling-partner-api-models/blob/main/models/orders-api-model/orders_2026-01-01.json)
-- [B2B delivery experience recipe (Java)](https://github.com/amzn/selling-partner-api-samples/blob/main/code-recipes/java/src/main/java/b2bdeliveryexperience/BusinessDeliveryExperienceRecipe.java)
+- [Explore the Orders API in Developer Hub](pathname:///apis/orders)
+- [Orders API model (orders_2026-01-01.json)](https://github.com/amzn/selling-partner-api-models/blob/db2936aa19f4b48185173c385c51ab115166f221/models/orders-api-model/orders_2026-01-01.json)
+- [B2B delivery experience recipe (Java)](https://github.com/amzn/selling-partner-api-samples/blob/21589c4a467d433c2cb95e80ae61eb28213f2d67/code-recipes/java/src/main/java/b2bdeliveryexperience/BusinessDeliveryExperienceRecipe.java)
 - [Original discussion with the Postman migration collection](https://github.com/amzn/selling-partner-api-samples/discussions/253)
+- [Discuss this topic in Developer Hub](https://github.com/anjireddylella/developerhub/discussions/6)
