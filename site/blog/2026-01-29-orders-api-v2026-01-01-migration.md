@@ -5,7 +5,7 @@ authors: [spapi-team]
 date: 2026-01-29
 tags: [orders, migrations, new-launch]
 description: Move from Orders API v0 to v2026-01-01 with fewer calls and no Restricted Data Token for PII.
-# Content catalog fields (see docs/metrics-assessment.md, item 4.2)
+# Content catalog fields
 content_id: topic/orders-v2026-01-01-migration
 content_type: hot_topic
 api_family: orders

@@ -5,7 +5,7 @@ authors: [spapi-team]
 date: 2026-10-16
 tags: [reports, best-practices]
 description: Practical rules for parsing SP-API report documents without breaking when formats change.
-# Content catalog fields (see docs/metrics-assessment.md, item 4.2)
+# Content catalog fields
 content_id: topic/parsing-reports-efficiently
 content_type: hot_topic
 api_family: reports

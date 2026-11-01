@@ -36,7 +36,7 @@ Search runs only in the browser against a bounded build-time catalog. It does no
 |---|---|---|
 | Docs | `docs/` | Markdown. Sidebar is generated from the folder. |
 | API content | `api-content.config.js`, `plugins/api-content/` | Build-time plugin verifies pinned local sources, creates API and license routes, and emits bounded search and analytics catalogs. |
-| Hot topics | `blog/`, `templates/hot-topic.md`, `scripts/new-hot-topic.mjs` | One validated Markdown file per post. Follow the [authoring runbook](../docs/hot-topic-authoring.md). |
+| Hot topics | `blog/`, `templates/hot-topic.md`, `scripts/new-hot-topic.mjs` | One validated Markdown file per post. See [Hot-topic authoring](#hot-topic-authoring). |
 | Content validation | `scripts/validate-content.mjs` | Checks metadata, attribution, links, ownership, provenance, size, and duplicate IDs before builds. |
 | Questions and ideas | `plugins/community/` | Build-time plugin reads GitHub Discussions when configured and creates `/community/questions/<n>` and `/community/ideas/<n>` pages. Invalid live records are quarantined. |
 | Replies and votes | `src/components/GiscusThread/` | Giscus embedded per thread (`mapping="number"`). Votes = 👍 reactions + GitHub upvotes. |
@@ -54,8 +54,6 @@ The POC never fetches source content during validation or build. It reads immuta
 
 `api-content.config.js` selects exact model operations, recipe ranges, samples, source URLs, commits, and SHA-256 digests. The plugin verifies those constraints before emitting browser data. Pages show bounded model projections and exact labeled recipe excerpts, link to pinned originals, and publish the applicable license material locally. Do not update the snapshots as part of ordinary page or hot-topic authoring.
 
-See the [content strategy](../docs/content-strategy.md) for ownership, GitHub and hub boundaries, and the out-of-scope production synchronization proposal.
-
 ## Hot-topic authoring
 
 Create and edit one file:
@@ -69,7 +67,7 @@ npm run new:hot-topic -- \
   --provenance original
 ```
 
-The generated metadata makes the post discoverable, searchable, feedback-enabled, and analytics-aware without a catalog or configuration edit. Adapted posts require source Discussion/category fields and visible matching attribution. An optional engagement Discussion must belong to `anjireddylella/developerhub`. The command never creates a Discussion or changes an upstream repository. See [Hot-topic authoring](../docs/hot-topic-authoring.md) for all fields, attribution examples, checks, preview steps, review, and rollback.
+The generated metadata makes the post discoverable, searchable, feedback-enabled, and analytics-aware without a catalog or configuration edit. Adapted posts require source Discussion/category fields and visible matching attribution. An optional engagement Discussion must belong to `anjireddylella/developerhub`. The command never creates a Discussion or changes an upstream repository. `templates/hot-topic.md` shows every front-matter field.
 
 ## Environment variables
 
