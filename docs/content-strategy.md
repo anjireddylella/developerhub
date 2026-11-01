@@ -2,18 +2,38 @@
 
 ## Decision
 
-GitHub remains authoritative for API models, sample code, source Discussions, contribution and Git history, pull requests, releases, and clone or fork workflows. Developer Hub is the primary reading and discovery experience: curated model summaries, inline code with copy controls, sample overviews, hot topics, unified search, community entry points, and content analytics.
+Use three public repositories in total. A separate fourth repository for Developer Hub application code is not needed.
+
+1. `amzn/selling-partner-api-models` remains authoritative for machine-readable API models and schemas.
+2. `amzn/selling-partner-api-samples` remains authoritative for executable recipes and sample applications.
+3. The Developer Hub repository contains the Docusaurus application, all new Solutions Architect educational content, content metadata, publishing automation, and the canonical GitHub Discussions for new general community activity.
+
+The existing formal developer-documentation portal remains authoritative for complete API reference material owned by its current team.
+
+The Developer Hub becomes the primary reading, discovery, and community experience: curated model summaries, inline code with copy controls, sample overviews, hot topics, tutorials, best practices, migration guides, unified search, questions, ideas, article feedback, and content analytics. Existing Discussions in the models and samples repositories remain available as historical records, but they are not the intended destination for new general Q&A, ideas, hot topics, or Solutions Architect guidance.
 
 The hub renders source material as native Docusaurus and Prism content. It does not embed GitHub in an iframe or imitate a repository browser. Native pages keep navigation, accessibility, search, responsive behavior, and analytics consistent while exact pinned links preserve access to the complete source and history.
 
 ## Ownership
 
-| Area | Owner | Responsibilities |
+| Area | Canonical owner and location | Responsibilities |
 |---|---|---|
-| Upstream models, samples, and source Discussions | Owners of `amzn/selling-partner-api-models` and `amzn/selling-partner-api-samples` | Original content, source history, releases, contributions, and upstream licenses |
-| Developer Hub content platform | Developer Hub repository owners | Templates, validation, metadata contracts, review policy, generated pages, search, and publication |
-| Hot-topic content | Solutions Architects | Prose, technical accuracy, attribution, related links, and optional Developer Hub Discussion creation |
-| Hosting and telemetry | Platform owners | Existing Amplify deployment and CloudWatch RUM configuration; authors do not need AWS access |
+| API models and schemas | `amzn/selling-partner-api-models` | Machine-readable contracts, model validation, release automation, source history, contributions, and model-defect Issues |
+| Recipes and sample applications | `amzn/selling-partner-api-samples` | Executable code, tests, dependencies, deployment assets, source history, contributions, and sample-code-defect Issues |
+| Solutions Architect educational content | Developer Hub repository | Hot topics, tutorials, best practices, workshops, migration guidance, cross-API troubleshooting, editorial review, and publication |
+| New general community activity | Developer Hub GitHub Discussions | Questions, answers, ideas, article comments, reactions, and votes |
+| Historical upstream Discussions | Existing models and samples repository Discussions | Existing records remain readable and linkable during transition; new general engagement should be directed to Developer Hub |
+| Developer Hub content platform | Developer Hub repository owners | Docusaurus application code, templates, validation, metadata contracts, review policy, generated pages, search, analytics instrumentation, and publication automation |
+| Complete formal API documentation | Existing developer-documentation portal and its owning team | Full formal API reference and documentation outside the Solutions Architect team's ownership |
+| Hosting and telemetry | Developer Hub platform owners | Amplify deployment and CloudWatch RUM configuration; content authors do not need AWS access |
+
+## Content placement rule
+
+Educational content that remains useful without checking out a source repository belongs in Developer Hub. This includes hot topics, tutorials, migration guides, best practices, workshops, architecture guidance, FAQs, and cross-API troubleshooting.
+
+Documentation coupled to an exact source tree remains beside that source. This includes build and test commands, dependencies, environment variables, contribution instructions, licenses, model-generation instructions, and deployment details that must change atomically with sample code. Developer Hub may render or summarize this material, but the source repository remains canonical.
+
+Source repository Issues are for reproducible defects in their artifacts. General usage questions, content feedback, and feature ideas belong in Developer Hub Discussions. Account, registration, and production support cases continue to use official Developer Support.
 
 ## Proof-of-concept source model
 
@@ -36,9 +56,13 @@ A content owner would review source selection, technical accuracy, attribution, 
 
 ## Portal boundaries
 
-Developer Hub supports discovery, reading, inline code copying, related-content navigation, helpful feedback, local search, and entry points to community discussions. GitHub continues to handle full-file inspection, source history, clone and fork, pull requests, releases, contribution history, and Discussion storage.
+Developer Hub is the recommended front door for discovery, reading, inline code copying, related-content navigation, helpful feedback, local search, hot topics, and general community engagement. Developers should not need to understand which repository stores a model or recipe merely to read and use it.
 
-The hub should link to those GitHub-native actions with truthful labels such as **View source**, **View history**, **Open discussion**, **Ask on GitHub**, and **Clone or fork on GitHub**. It should not simulate repository operations. This boundary lets developers read most guidance without switching portals while retaining GitHub for work that depends on repository or Discussion capabilities.
+GitHub continues to handle complete source inspection, source history, clone and fork, pull requests, releases, contribution history, and technical Issues. The two source repositories remain visible when a developer intentionally chooses **View source**, **View history**, **Report a model defect**, **Report a sample-code defect**, or **Clone or fork on GitHub**. The existing developer-documentation portal remains the destination for complete formal API reference material.
+
+New questions, answers, ideas, hot-topic comments, reactions, and votes use Developer Hub Discussions. Existing upstream Discussions remain historical records and may appear as attributed links or bounded search results. They should not compete as active destinations once the production transition is complete.
+
+This boundary gives developers one coherent learning and engagement experience while retaining GitHub for operations that depend on repository capabilities.
 
 ## Target API page structure
 
@@ -58,17 +82,33 @@ The demo includes Data Kiosk, Orders, Vehicles, and Easy Ship. API applicability
 
 ## Hot-topic publication
 
-A Solutions Architect creates one Markdown file by following the [hot-topic authoring runbook](hot-topic-authoring.md):
+The Developer Hub repository is the canonical home for all new Solutions Architect hot topics. A Solutions Architect creates one Markdown file by following the [hot-topic authoring runbook](hot-topic-authoring.md):
 
 1. Run the scaffolder from `site/`.
 2. Edit only the generated `blog/YYYY-MM-DD-<slug>.md` file.
-3. For adapted content, retain a pinned source or source Discussion and visible attribution. Keep the optional engagement Discussion separate and point it only to `anjireddylella/developerhub`.
+3. For adapted historical content, retain a pinned source or source Discussion and visible attribution. Keep the Developer Hub engagement Discussion separate and point it only to the Developer Hub repository.
 4. Run `npm run validate:content`, `npm test`, and `npm run build`, then use `npm run serve` for a local visual check.
 5. Open a Developer Hub pull request. The read-only PR check builds sample data and uploads only `site/build/` as the three-day `developer-hub-preview` artifact. It does not deploy.
 6. A content owner reviews accuracy, readability, attribution, links, metadata, responsive appearance, and dark mode. A code owner reviews platform or validator changes; ordinary one-file hot-topic changes need content review once ownership rules are configured.
 7. Merge only after checks pass. The existing main-branch workflow performs the Amplify deployment; authoring requires no AWS access.
 
+A new hot topic should not be copied in full into the models or samples repository Discussions. If those audiences need a notification, publish a short pointer to the canonical Developer Hub article. The article's associated Developer Hub Discussion stores comments and reactions rather than a second manually maintained copy of the article.
+
 To roll back a bad publication, use `git revert` on the merged content commit and merge that revert through the same pull-request checks. Do not rewrite shared history or manually delete production content.
+
+## Community transition
+
+The final production move should be gradual:
+
+1. Preserve existing upstream Discussions and their URLs as historical records.
+2. Publish all new Solutions Architect articles in Developer Hub.
+3. Direct new general Q&A, ideas, and article feedback to Developer Hub Discussions.
+4. Keep source repository Issues open for model and sample-code defects only.
+5. Add pinned notices and repository guidance pointing developers to the Developer Hub after the owning team approves the transition.
+6. Surface selected historical discussions through attributed links or read-only search results rather than creating new engagement in the old locations.
+7. Measure adoption before restricting old Discussion entry points.
+
+This transition policy is a production decision. The POC does not modify the existing repositories or their Discussion settings.
 
 ## Measurement and privacy
 
