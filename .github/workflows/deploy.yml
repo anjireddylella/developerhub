@@ -67,6 +67,7 @@ jobs:
           HUB_GITHUB_REPO: ${{ github.repository }}
           HUB_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GISCUS_REPO_ID: ${{ vars.GISCUS_REPO_ID }}
+          RUM_PRIVACY_APPROVED: ${{ vars.RUM_PRIVACY_APPROVED }}
           RUM_APP_MONITOR_ID: ${{ vars.RUM_APP_MONITOR_ID }}
           RUM_IDENTITY_POOL_ID: ${{ vars.RUM_IDENTITY_POOL_ID }}
           RUM_REGION: ${{ vars.AWS_REGION }}
